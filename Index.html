@@ -1,0 +1,111 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>deOnibus</title>
+    <link rel="stylesheet" href="node_modules\bootstrap\dist\css\bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="#">deônibus</a>
+    </nav>
+    <nav class="navbar navbar-expand-lg">
+        <a href="#" class="navbar-brand">&nbsp;</a>
+    </nav>
+	
+    <div class="container mb-4">
+        <div id="divRetServico"></div>
+    </div>
+
+    <script src="node_modules\jquery\dist\jquery.min.js"></script>
+    <script src="node_modules\popper.js\dist\umd\popper.min.js"></script>
+    <script src="node_modules\bootstrap\dist\js\bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.ajax({
+                url: "https://localhost:44337/api/Travel/Get",
+				crossDomain: true,
+                type: "get",
+				data: {},
+				header: {
+					contentType: "application/json",
+					accept: "application/json"
+				},                
+				success: function (result, status, xhr) {
+					var html = '';
+					$(result.results).each(function(index, value) {
+						html += "<div class=\"row\">";
+						html += "<div class=\"col-xs-12 col-sm-3\">";
+						html += "</div>";
+						html += "<div class=\"col-xs-12 col-sm-2\"> ";
+						html += "<div class=\"row\">";
+						html += "<label>" + new Date(value.departureDate.iso).toLocaleTimeString() + "</label>";
+						html += "<hr style=\"width: 66px; height: 0px; border: 1px solid #808080;\" />"
+						html += "<label>" + new Date(value.arrivalDate.iso).toLocaleTimeString() + "</label>";
+						html += "</div>"  ;
+						html += "<div class=\"row\">";
+						html += "<label>de " + value.origin + "</label>";
+						html += "<br />"
+						html += "<label>para " + value.destination + "</label>";
+						html += "</div>";
+						html += "<div class=\"row\">"
+						html += "<label>" + value.busClass + "</label>"
+						html += "</div>"
+						html += "</div>";
+						html += "<div class=\"col-xs-12 col-sm-3\"> ";
+						html += "</div>";
+						html += "<div class=\"col-xs-12 col-sm-3\"> ";
+						html += "<a href='#' class='btn btn-primary' onClick='confirmaCompra(\"" + value.objectId + "\")' type='button' >Comprar</a>";
+						html += "</div>";
+						html += "</div>";
+					});					
+					
+					$('#divRetServico').html(html);
+				},
+				error: function (xhr, status, error) {
+					console.log(xhr)
+				}
+             });
+         });
+		 
+		 function realizaCompra(objectId) {
+			$.ajax({
+                url: "https://localhost:44337/api/Travel/Buy",
+				crossDomain: true,
+                type: "post",
+				headers: { 
+					'Accept': 'application/json',
+					'Content-Type': 'application/json' 
+				},
+				data: JSON.stringify({ 
+							"objectId": objectId
+							}),                
+				success: function (result, status, xhr) {
+					swal.fire({title: 'Sucesso', text: 'Compra realizada com sucesso', icon: 'success'});
+				},
+				error: function (xhr, status, error) {
+					swal.fire({title: 'Erro', text: 'Ocorreu um erro ao realizar a compra', icon: 'error'});
+				}
+             });
+		 }
+		 
+		 function confirmaCompra(objectId){
+			Swal.fire({
+				title: 'Confirma compra?',
+				text: "Confirma a compra?",
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				cancelButtonText: 'Não',
+				confirmButtonText: 'Sim'
+			}).then((result) => {
+			if (result.isConfirmed) {
+				realizaCompra(objectId)
+			}
+			})
+		 }
+        </script>
+</body>
+</html>
